@@ -3,7 +3,6 @@ defmodule DevicesAppWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
-    plug CORSPlug
   end
 
   pipeline :api_auth do
@@ -21,15 +20,12 @@ defmodule DevicesAppWeb.Router do
     pipe_through :api
 
     resources("/sessions", SessionController, only: [:create])
-    options   "/sessions", SessionController, :options
   end
 
   scope "/api", DevicesAppWeb do
     pipe_through [:api, :api_auth, :set_token]
 
     resources("/users", UserController, only: [:show, :create])
-    options   "/users", UserController, :options
-    options   "/users/:id", UserController, :options
     resources("/sessions", SessionController, only: [:delete])
   end
 end

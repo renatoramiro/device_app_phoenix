@@ -25,10 +25,4 @@ defmodule DevicesAppWeb.UserController do
         |> render("show.json", user: user)
     end
   end
-
-  # defp refresh_token(conn) do
-  #   jwt = Guardian.Plug.current_token(conn)
-  #   {:ok, _old_token, {new_token, _new_claim}} = DevicesApp.Auth.Guardian.refresh(jwt)
-  #   new_token
-  # end
 end

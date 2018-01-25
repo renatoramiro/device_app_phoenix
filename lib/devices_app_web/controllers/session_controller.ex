@@ -1,7 +1,7 @@
 defmodule DevicesAppWeb.SessionController do
   use DevicesAppWeb, :controller
 
-  import Comeonin.Bcrypt, only: [checkpw: 2, dummy_checkpw: 0]
+  import Comeonin.Bcrypt, only: [checkpw: 2]
   plug :scrub_params, "session" when action in [:create]
 
   alias DevicesApp.{User, Repo}
@@ -11,10 +11,7 @@ defmodule DevicesAppWeb.SessionController do
     result = cond do
       user && checkpw(password, user.password_hash) ->
         new_conn = login(conn, user)
-        jwt = Guardian.Plug.current_token(new_conn)
-        claims = Guardian.Plug.current_claims(new_conn)
-        exp = Map.get(claims, "exp")
-        {:ok, new_conn}
+        {:ok, new_conn, get_token(new_conn), get_expiration(new_conn)}
       user ->
         {:error, :unauthorized, conn}
       true ->
@@ -22,15 +19,14 @@ defmodule DevicesAppWeb.SessionController do
     end
 
     case result do
-      {:ok, new_conn} ->
+      {:ok, new_conn, jwt, exp_token} ->
         new_conn
-        |> put_resp_header("X-Delivered-By", "Device App")
         |> put_resp_header("Authorization", "Bearer #{jwt}")
-        |> put_resp_header("x-expires", to_string(exp))
+        |> put_resp_header("x-expires", to_string(exp_token))
         |> render("login.json", user: user, jwt: jwt)
-      {:error, _reason, conn} ->
+      {:error, reason, conn} ->
         conn
-        |> send_resp(_reason, "")
+        |> send_resp(reason, "{\"success\":false, \"message\": \"#{reason}\"}")
         |> halt()
     end
   end
@@ -40,16 +36,29 @@ defmodule DevicesAppWeb.SessionController do
     |> DevicesApp.Auth.Guardian.Plug.sign_in(user)
   end
 
-  def delete(conn, _) do
+  def delete(conn, opts) do
     conn
     |> logout()
-    |> send_resp(:no_content, "")
+    |> render("logout.json", opts)
+  end
+
+  defp get_token(conn) do
+    Guardian.Plug.current_token(conn)
+  end
+
+  defp get_expiration(conn) do
+    exp = Guardian.Plug.current_claims(conn)
+    |> Map.get("exp")
+    exp
   end
 
   defp logout(conn) do
     jwt = Guardian.Plug.current_token(conn)
-    claims = Guardian.Plug.current_claims(conn)
-    Guardian.revoke(jwt, claims)
-    render(conn, "logout.json")
+    case DevicesApp.Auth.Guardian.revoke(jwt) do
+      {:ok, _claims} ->
+        conn
+      {:error, _any} ->
+        halt(conn)
+    end
   end
 end

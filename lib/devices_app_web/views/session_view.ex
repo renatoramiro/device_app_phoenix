@@ -9,7 +9,7 @@ defmodule DevicesAppWeb.SessionView do
     %{success: true, id: user.id, token: jwt}
   end
 
-  def render("logout.json", _opts) do
+  def render("logout.json", %{}) do
     %{message: "Successful signed out."}
   end
 end

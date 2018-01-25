@@ -36,6 +36,8 @@ defmodule DevicesAppWeb.Endpoint do
     key: "_devices_app_key",
     signing_salt: "MiAeaROS"
 
+  plug CORSPlug
+
   plug DevicesAppWeb.Router
 
   @doc """
