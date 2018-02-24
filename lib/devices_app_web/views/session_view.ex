@@ -5,8 +5,8 @@ defmodule DevicesAppWeb.SessionView do
     %{name: user.name, username: user.username}
   end
 
-  def render("login.json", %{user: user, jwt: jwt}) do
-    %{success: true, id: user.id, token: jwt}
+  def render("login.json", %{user: user}) do
+    %{success: true, id: user.id}
   end
 
   def render("logout.json", %{}) do

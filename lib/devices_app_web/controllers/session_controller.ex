@@ -23,7 +23,7 @@ defmodule DevicesAppWeb.SessionController do
         new_conn
         |> put_resp_header("Authorization", "Bearer #{jwt}")
         |> put_resp_header("x-expires", to_string(exp_token))
-        |> render("login.json", user: user, jwt: jwt)
+        |> render("login.json", user: user)
       {:error, reason, conn} ->
         conn
         |> send_resp(reason, "{\"success\":false, \"message\": \"#{reason}\"}")

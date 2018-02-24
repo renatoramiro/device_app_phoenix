@@ -19,13 +19,14 @@ defmodule DevicesAppWeb.Router do
   scope "/api", DevicesAppWeb do
     pipe_through :api
 
-    resources("/sessions", SessionController, only: [:create])
+    post "/signin", SessionController, :create
+    post "/register", UserController, :create
   end
 
   scope "/api", DevicesAppWeb do
     pipe_through [:api, :api_auth, :set_token]
 
-    resources("/users", UserController, only: [:show, :create])
-    resources("/sessions", SessionController, only: [:delete])
+    get "/me", UserController, :show
+    delete "/logout", SessionController, :delete
   end
 end
